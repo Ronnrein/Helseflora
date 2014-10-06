@@ -1,0 +1,137 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Ronnrein
+ * Date: 03.10.2014
+ * Time: 16:41
+ */
+
+namespace Classes\Models\AbstractModels;
+
+
+use Classes\DB;
+use PDO;
+
+/**
+ * Abstract model class other classes will extend
+ */
+abstract class DbModel {
+
+    /**
+     * Name of table
+     * @var string
+     */
+    protected static $table;
+
+    /**
+     * Name of view, if this is one
+     * @var string
+     */
+    protected static $view;
+
+    /**
+     * Stores all instances of current class
+     * @var array
+     */
+    protected static $instances = array();
+
+    /**
+     * Stores info from database
+     * @var array
+     */
+    protected $info;
+
+    /**
+     * Database instance
+     * @var PDO
+     */
+    protected $DB;
+
+    public function __construct($in) {
+        $this->DB = DB::getInstance();
+        if (!isset(static::$table)) {
+            throw new Exception("Variable table not set for class: \"" . get_class($this) . "\"");
+        }
+        if (is_int($in) || (is_string($in) && is_int((int) $in))) {
+            $in = (int) $in;
+            $table = (isset(static::$view)) ? static::$view : static::$table;
+            $stmt = $this->DB->prepare("SELECT * FROM {$table} WHERE id = :id");
+            $stmt->bindParam(":id", $in, PDO::PARAM_INT);
+            $stmt->execute();
+            $this->info = $stmt->fetch(PDO::FETCH_ASSOC);
+            static::$instances[] = $this;
+        } else if (is_array($in)) {
+            $this->info = $in;
+        }
+    }
+
+    /**
+     * Get id of current tablerow
+     * @return int
+     */
+    public function getId(){
+        return (int)$this->info['id'];
+    }
+
+    /**
+     * Returns the info array from db
+     * @return array
+     */
+    public function getInfo(){
+        return $this->info;
+    }
+
+    /**
+     * Set field of object and database to value
+     * @param string $field
+     * @param mixed $value
+     */
+    protected function setField($field, $value) {
+        $stmt = $this->DB->prepare("UPDATE ".static::$table." SET {$field} = :value WHERE id = :id");
+        $stmt->execute(array(":value" => $value, ":id" => $this->getId()));
+        foreach(static::getInstances() as $instance){
+            if($instance->getId() === $this->getId()){
+                $instance->info[$field] = $value;
+            }
+        }
+    }
+
+    /**
+     * Get all instances of current class
+     * @return array
+     */
+    protected static function getInstances(){
+        $result = array();
+        foreach(static::$instances as $instance){
+            if(get_class($instance) === get_called_class()){
+                $result[] = $instance;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Get all the rows of this model as objects
+     * @return $this[]
+     */
+    public static function getAll($appendix = ""){
+        $db = DB::getInstance();
+        $result = array();
+        $stmt = $db->prepare("SELECT * FROM ".static::getView()." ".$appendix);
+        $stmt->execute();
+        foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row){
+            $result[] = new static($row);
+        }
+        static::getView();
+        return $result;
+    }
+
+    /**
+     * Gets name of table/view to get data from
+     * @return bool
+     */
+    public static function getView(){
+        return isset(static::$view) ? static::$view : static::$table;
+    }
+
+}

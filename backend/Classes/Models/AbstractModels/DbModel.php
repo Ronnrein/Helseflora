@@ -18,12 +18,6 @@ use PDO;
 abstract class DbModel {
 
     /**
-     * Name of table
-     * @var string
-     */
-    protected static $table;
-
-    /**
      * Name of view, if this is one
      * @var string
      */
@@ -49,12 +43,10 @@ abstract class DbModel {
 
     public function __construct($in) {
         $this->DB = DB::getInstance();
-        if (!isset(static::$table)) {
-            throw new Exception("Variable table not set for class: \"" . get_class($this) . "\"");
-        }
         if (is_int($in) || (is_string($in) && is_int((int) $in))) {
             $in = (int) $in;
-            $table = (isset(static::$view)) ? static::$view : static::$table;
+            $exp = explode('\\', get_called_class());
+            $table = (isset(static::$view)) ? static::$view : strtolower(end($exp));
             $stmt = $this->DB->prepare("SELECT * FROM {$table} WHERE id = :id");
             $stmt->bindParam(":id", $in, PDO::PARAM_INT);
             $stmt->execute();
@@ -70,7 +62,7 @@ abstract class DbModel {
      * @return int
      */
     public function getId(){
-        return (int)$this->info['id'];
+        return isset($this->info['id']) ? (int)$this->info['id'] : null;
     }
 
     /**
@@ -87,7 +79,8 @@ abstract class DbModel {
      * @param mixed $value
      */
     protected function setField($field, $value) {
-        $stmt = $this->DB->prepare("UPDATE ".static::$table." SET {$field} = :value WHERE id = :id");
+        $exp = explode('\\', get_called_class());
+        $stmt = $this->DB->prepare("UPDATE ".strtolower(end($exp))." SET {$field} = :value WHERE id = :id");
         $stmt->execute(array(":value" => $value, ":id" => $this->getId()));
         foreach(static::getInstances() as $instance){
             if($instance->getId() === $this->getId()){
@@ -131,7 +124,8 @@ abstract class DbModel {
      * @return bool
      */
     public static function getView(){
-        return isset(static::$view) ? static::$view : static::$table;
+        $exp = explode('\\', get_called_class());
+        return isset(static::$view) ? static::$view : strtolower(end($exp));
     }
 
 }

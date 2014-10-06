@@ -5,16 +5,27 @@
  * Date: 03.10.2014
  * Time: 16:40
  */
-require_once("autoload.php");
+namespace Api\CallableFunctions;
+
+require_once("api.php");
 
 use Classes\Models\Plant;
+use Classes\DB;
 
-echo "Testing stuff<br />";
+// Here goes functions that can get called by api
 
-$plant = new Plant(3);
-echo $plant->getName()."<br />";
-echo $plant->getInfo()["navn"]."<br /><br />";
+function getAllPlants(){
+    $result = [];
+    foreach(Plant::getAll("ORDER BY id ASC") as $plant){
+        $info = $plant->getInfo();
+        $info['imageUrlS'] = $plant->getImageSmallURL();
+        $info['imageUrlL'] = $plant->getImageLargeURL();
+        $result[] = $info;
+    }
+    \Api\output($result);
+}
 
-foreach(Plant::getAll("ORDER BY id ASC") as $plant){
-    echo $plant->getId()." => ".$plant->getName()."<br />";
+function getCategories(){
+    $db = DB::getInstance();
+    $stmt = $db->prepare("SELECT DISTINCT kategori FROM plant");
 }

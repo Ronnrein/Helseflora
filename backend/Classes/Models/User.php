@@ -13,8 +13,51 @@ use Classes\Config;
 
 class User extends DbModel{
 
-    static function checkLogin($user, $pass){
+    private static $newUserStmt = "INSERT INTO user (name, username, password, email) VALUES (:name, :username, :password, :email)";
+    private static $checkUserStmt = "SELECT id FROM user WHERE username = :username AND password = :password";
 
+    public function setUsername($username){
+        $this->setField("username", $username);
+    }
+
+    public function createToken(){
+        Session::create($this);
+    }
+
+    /**
+     * Checks the login and returns if it is a valid login or not
+     * @param $user
+     * @param $pass
+     * @return User|bool
+     */
+    public static function checkLogin($user, $pass){
+        $db = \Classes\DB::getInstance();
+        $stmt = $db->prepare(self::$checkUserStmt);
+        $stmt->execute(array(":username" => $user, ":password" => self::hashPassword($pass)));
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? new User($row['id']) : false;
+    }
+
+    /**
+     * Create a new user
+     * @param $name
+     * @param $username
+     * @param $password
+     * @param $email
+     */
+    public static function create($name, $username, $password, $email){
+        $db = \Classes\DB::getInstance();
+        $stmt = $db->prepare(self::$newUserStmt);
+        $stmt->execute(array(":name" => $name, ":username" => $username, ":password" => self::hashPassword($password), ":email" => $email));
+    }
+
+    /**
+     * Hash the given string with md5, using the salt set in Config
+     * @param $pass
+     * @return string
+     */
+    private static function hashPassword($pass){
+        return md5($pass.Config::PASS_SALT);
     }
 
 } 

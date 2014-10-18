@@ -1,63 +1,70 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Ronnrein
- * Date: 06.10.2014
- * Time: 16:24
- */
+
 namespace Api;
+header("Access-Control-Allow-Origin: *");
 
 require_once("autoload.php");
+require_once("getFunctions.php");
+require_once("postFunctions.php");
 
 // Array containing legal formats (format => page content type)
 $formats = array(
-    "json"        => "json",
-    "javascript"  => "json",
-    "xml"         => "xml"
+    "json"        => "application/json",
+    "javascript"  => "application/json",
+    "xml"         => "application/xml",
+    "text"        => "text/plain"
 );
 
-// Default format will be json
-$format = "json";
+// Default format will be json for GET and text for POST
+$format = $_SERVER['REQUEST_METHOD'] === "POST" ? "text" : "json";
 
 // Check for callback get variable
 if(isset($_GET['callback'])){
-
     // If callback variable is set, this should be javascript
     $format = "javascript";
-
 } else if(isset($_GET['format']) && isset($formats[$_GET['format']])){
-
     // If the get variable is set and valid, assign it
     $format = $_GET['format'];
-
 }
 
 // Define format constants for easy access
 define("FORMAT", $format);
 define("CONTENT", $formats[FORMAT]);
 
-// Define headers, based on content type
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/".CONTENT);
+$action = null;
+$args = null;
 
 // Handle action
 if(isset($_GET['a'])){
-
     // Assign action to variable, later to be called
-    $action = "Api\\CallableFunctions\\".$_GET['a'];
+    $action = "\\Api\\CallableGetFunctions\\".$_GET['a'];
+    $args = $_GET;
+} else if(isset($_POST['a'])){
+    // Assign action to variable, later to be called
+    $action = "\\Api\\CallablePostFunctions\\".$_POST['a'];
+    $args = $_POST;
+} else{
+    die("No action set");
+}
 
-    // If variable name is also function name, call it
-    if(function_exists($action)){
-        $action();
-    }
+// If variable name is also function name, call it
+if(function_exists($action)){
+    output($action($args));
+} else{
 
+    throw new \BadFunctionCallException("GET function '".$action."' does not exist.");
 }
 
 // Output functions
 
 function output($data){
-    $outputFunc = "Api\\output".ucfirst(CONTENT);
+    $outputFunc = "Api\\output".ucfirst(explode("/", CONTENT)[1]);
+    header("Content-Type: ".CONTENT);
     $outputFunc($data);
+}
+
+function outputPlain($data){
+    echo $data;
 }
 
 /**
@@ -80,9 +87,7 @@ function outputXml($data){
     foreach($data as $item){
         $array[] = array("row" => $item);
     }
-
     arrayToXml($array, $xml);
-
     print $xml->asXML();
 }
 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Ronnrein
- * Date: 03.10.2014
- * Time: 16:44
- */
 
 namespace Classes\Models;
 
@@ -15,8 +9,16 @@ class Plant extends DbModel{
 
     // GETTERS
 
+    /**
+     * Returns the price of this plant
+     * @return float
+     */
+    public function getPrice(){
+        return (float)$this->getInfo()['price'];
+    }
+
     public function getImageFile(){
-        return $this->info['bildefil'];
+        return $this->info['image'];
     }
 
     public function getImageSmallURL(){

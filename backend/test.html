@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+            $.post("index.php", {a: "logIn", username: "Ronnrein", password: "jalla"})
+                    .done(function(data){
+                        $("body").html(data);
+                    });
+        })
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

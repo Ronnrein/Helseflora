@@ -74,6 +74,15 @@ abstract class DbModel {
     }
 
     /**
+     * Delete this row of the class
+     */
+    public function delete(){
+        $exp = explode('\\', get_called_class());
+        $stmt = $this->DB->prepare("DELETE FROM ".strtolower(end($exp))." WHERE id= :id");
+        $stmt->execute(array(":id" => $this->getId()));
+    }
+
+    /**
      * Set field of object and database to value
      * @param string $field
      * @param mixed $value

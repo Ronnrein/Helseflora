@@ -19,10 +19,27 @@ class Session extends DbModel{
     private static $newStmt = "INSERT INTO session (user_id, timeout, token) VALUES (:user_id, :timeout, :token)";
     private static $delStmt = "DELETE FROM session WHERE user_id = :user_id";
 
+    public function getToken(){
+        return $this->info['token'];
+    }
+
+    public function getUser(){
+        return new User($this->getId());
+    }
+
+    public function isValid(){
+        $timeout = new \DateTime($this->info['timeout']);
+        $diff = $timeout->diff(new \DateTime());
+        return $diff->h + ($diff->days*24) < Config::SESSION_TIMEOUT_HOURS;
+    }
+
     public static function getByToken($token){
         $db = DB::getInstance();
         $stmt = $db->prepare(self::$getStmt);
         $stmt->execute(array(":token" => $token));
+        if($stmt->rowCount() == 0){
+            throw new \Exception("Session with token \"".$token."\" does not exist");
+        }
         return new Session($stmt->fetchColumn());
     }
 
@@ -37,6 +54,7 @@ class Session extends DbModel{
         $date = new \DateTime();
         $date->add(new \DateInterval("PT".Config::SESSION_TIMEOUT_HOURS."H"));
         $stmt->execute(array(":user_id" => $user->getId(), "timeout" => $date->format("Y-m-d H:i:s"), ":token" => self::generateToken($user)));
+        return new Session((int)$db->lastInsertId());
     }
 
     /**

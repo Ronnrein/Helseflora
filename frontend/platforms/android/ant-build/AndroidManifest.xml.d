@@ -1,2 +1,2 @@
-C:\wamp\www\Helseflora\platforms\android\ant-build\AndroidManifest.xml : \
-C:\wamp\www\Helseflora\platforms\android\AndroidManifest.xml \
+C:\wamp\www\Helseflora\frontend\platforms\android\ant-build\AndroidManifest.xml : \
+C:\wamp\www\Helseflora\frontend\platforms\android\AndroidManifest.xml \

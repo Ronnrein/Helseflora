@@ -16,12 +16,22 @@ class User extends DbModel{
     private static $newUserStmt = "INSERT INTO user (name, username, password, email) VALUES (:name, :username, :password, :email)";
     private static $checkUserStmt = "SELECT id FROM user WHERE username = :username AND password = :password";
 
+    public static $current = null;
+
+    public function getUsername(){
+        return $this->info['username'];
+    }
+
+    public function getAccessId(){
+        return (int)$this->info['accessid'];
+    }
+
     public function setUsername($username){
         $this->setField("username", $username);
     }
 
     public function createToken(){
-        Session::create($this);
+        return Session::create($this);
     }
 
     /**

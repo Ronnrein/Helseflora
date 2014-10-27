@@ -22,9 +22,28 @@ function setField($data){
 function logIn($data){
     $user = User::checkLogin($data['username'], $data['password']);
     if($user) {
-        $user->createToken();
-        return Config::STATUS_SUCCESS;
+        $session = $user->createToken();
+        return array("username" => $user->getUsername(), "token" => $session->getToken(), "access" => $user->getAccessId());
     } else{
         return Config::STATUS_ERROR;
     }
+}
+
+function logOut($data){
+    Session::getByToken($data['sessionToken'])->delete();
+}
+
+function checkToken($data){
+    try{
+        $session = Session::getByToken($data['sessionToken']);
+        if($session->isValid()){
+            return Config::STATUS_SUCCESS;
+        } else{
+            $session->delete();
+            return Config::STATUS_ERROR;
+        }
+    } catch(\Exception $e){
+        return Config::STATUS_ERROR;
+    }
+
 }

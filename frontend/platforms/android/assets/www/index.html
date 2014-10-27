@@ -27,20 +27,138 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.css" />
+        <link rel="stylesheet" type="text/css" href="css/helseflora.min.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.icons.min.css" />
         <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>PhoneGap</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
         <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript">
-            app.initialize();
+            var serverUrl = "http://localhost/Helseflora/backend/";
+            var user = null;
+            var storage;
+
+            $(document).ready(function(){
+                app.initialize();
+                storage = window.localStorage;
+
+                checkLoggedIn();
+
+                function checkLoggedIn(){
+                    var item = storage.getItem("user");
+                    if(item === null){
+                        unsetUser();
+                        return;
+                    }
+                    user = JSON.parse(item);
+                    $.post(serverUrl, {a: "checkToken", sessionToken: user.token})
+                            .done(function(data){
+                                if(data === 1){
+                                    $("#loginPageButton").attr("href", "#userPage").html(user.username);
+                                    $(".token").val(user.token);
+                                    $(".currentUserUsername").html(user.username);
+                                } else{
+                                    unsetUser()
+                                }
+                            });
+                }
+
+                function unsetUser(){
+                    $("#loginPageButton").attr("href", "#loginPage").html("Logg inn");
+                    localStorage.removeItem("user");
+                    user = null;
+                }
+
+                $("#logoutButton").click(function(){
+                    $.post(serverUrl, {a: "logOut", sessionToken: user.token});
+                    unsetUser();
+                    $.mobile.changePage($("#mainPage"), "slide");
+                });
+
+                $("#loginForm").submit(function(e){
+                    $.post(serverUrl, $(this).serialize())
+                            .done(function(data){
+                                if(data !== 0){
+                                    user = {"username": data.username, "token": data.token, "access": data.access};
+                                    storage.setItem("user", JSON.stringify(user));
+                                    alert(user.username);
+                                    $(".token").val(user.token);
+                                    $(".currentUserUsername").html(user.username);
+                                    $("#loginPageButton").attr("href", "#userPage").html(user.username);
+                                    $.mobile.changePage($("#mainPage"), "slide");
+                                } else{
+                                    app.showAlert("Feil innloggingsinformasjon", "Feil");
+                                }
+                            });
+                    return false;
+                });
+            });
         </script>
+    </head>
+    <body>
+        <div data-role="page" id="mainPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#loginPage" id="loginPageButton" class="ui-btn-left" data-role="button" data-icon="user">Logg inn</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h3>Here goes page</h3>
+            </div>
+        </div>
+        <div data-role="page" id="loginPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <div data-role="tabs">
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#login1" data-ajax="false">Logg inn</a></li>
+                            <li><a href="#login2" data-ajax="false">Ny bruker</a></li>
+                        </ul>
+                    </div>
+                    <div id="login1" class="ui-body-d ui-content">
+                        <form id="loginForm">
+                            <label for="loginUsername">Brukernavn</label>
+                            <input type="text" name="username" id="loginUsername" data-clear-btn="true" maxlength="25" value="" placeholder="Skriv inn brukernavn" />
+                            <label for="loginPassword">Passord</label>
+                            <input type="password" name="password" id="loginPassword" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn passord" />
+                            <input type="hidden" name="a" value="logIn" />
+                            <input type="submit" value="Logg inn" />
+                        </form>
+                    </div>
+                    <div id="login2" class="ui-body-d ui-content">
+                        <form id="newUserForm">
+                            <label for="newName">Navn</label>
+                            <input type="text" name="name" id="newName" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn ditt navn" />
+                            <label for="newUsername">Brukernavn</label>
+                            <input type="text" name="username" id="newUsername" data-clear-btn="true" maxlength="25" value="" placeholder="Skriv inn ønsket brukernavn" />
+                            <label for="newPassword">Passord</label>
+                            <input type="password" name="password" id="newPassword" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn ønsket passord" />
+                            <label for="newEmail">Email</label>
+                            <input type="text" name="email" id="newEmail" data-clear-btn="true" maxlength="75" value="" placeholder="Skriv inn din email" />
+                            <input type="hidden" name="a" value="newUser" />
+                            <input type="submit" value="Lag bruker" />
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div data-role="page" id="userPage">
+            <div data-role="header">
+                <h1>Helseflora Bruker (<span class="currentUserUsername"></span>)</h1>
+                <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <button id="logoutButton">Logg ut</button>
+            </div>
+        </div>
     </body>
 </html>

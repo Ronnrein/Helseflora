@@ -2,10 +2,14 @@
 
 namespace Api;
 header("Access-Control-Allow-Origin: *");
+//error_reporting(0);
 
 require_once("autoload.php");
 require_once("getFunctions.php");
 require_once("postFunctions.php");
+
+use Classes\Models\User;
+use Classes\Models\Session;
 
 // Array containing legal formats (format => page content type)
 $formats = array(
@@ -16,7 +20,7 @@ $formats = array(
 );
 
 // Default format will be json for GET and text for POST
-$format = $_SERVER['REQUEST_METHOD'] === "POST" ? "text" : "json";
+$format = "json";
 
 // Check for callback get variable
 if(isset($_GET['callback'])){
@@ -33,18 +37,34 @@ define("CONTENT", $formats[FORMAT]);
 
 $action = null;
 $args = null;
+$token = null;
 
 // Handle action
 if(isset($_GET['a'])){
     // Assign action to variable, later to be called
     $action = "\\Api\\CallableGetFunctions\\".$_GET['a'];
     $args = $_GET;
+    if(isset($_GET['token'])){
+        $token = $_GET['token'];
+    }
 } else if(isset($_POST['a'])){
     // Assign action to variable, later to be called
     $action = "\\Api\\CallablePostFunctions\\".$_POST['a'];
     $args = $_POST;
+    if(isset($_POST['token'])){
+        $token = $_POST['token'];
+    }
 } else{
     die("No action set");
+}
+
+if(isset($token)){
+    $token = Session::getByToken($token);
+    if($token->isValid()){
+        User::$current = $token->getUser();
+    } else{
+        $token->delete();
+    }
 }
 
 // If variable name is also function name, call it
@@ -64,7 +84,7 @@ function output($data){
 }
 
 function outputPlain($data){
-    echo $data;
+    print_r($data);
 }
 
 /**

@@ -1,24 +1,4 @@
 <!DOCTYPE html>
-<!--
-    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
-
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
 <html>
     <head>
         <meta charset="utf-8" />
@@ -27,20 +7,151 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <title>Hello World</title>
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.css" />
+        <link rel="stylesheet" type="text/css" href="css/helseflora.min.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.icons.min.css" />
+        <style type="text/css">
+            .tinyTextInput{
+                width: 40px;
+            }
+
+            .floatLeft{
+                float:left;
+            }
+        </style>
+        <title>Helseflora</title>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/main.js"></script>
     </head>
     <body>
-        <div class="app">
-            <h1>PhoneGap</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+        <div data-role="page" id="mainPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#loginPage" id="loginPageButton" class="ui-btn-left" data-role="button" data-transition="slidedown" data-icon="user">Logg inn</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h1>Velkommen til Helseflora shop!</h1>
+                <a href="#productCategoryPage" id="productPageButton" data-role="button" data-icon="bars">Produkter</a>
             </div>
         </div>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-        <script type="text/javascript">
-            app.initialize();
-        </script>
+        <div data-role="page" id="loginPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-transition="slideup" data-rel="back">Hjem</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <div data-role="tabs">
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#login1" data-ajax="false">Logg inn</a></li>
+                            <li><a href="#login2" data-ajax="false">Ny bruker</a></li>
+                        </ul>
+                    </div>
+                    <div id="login1" class="ui-body-d ui-content">
+                        <form id="loginForm">
+                            <label for="loginUsername">Brukernavn</label>
+                            <input type="text" name="username" id="loginUsername" data-clear-btn="true" maxlength="25" value="" placeholder="Skriv inn brukernavn" />
+                            <label for="loginPassword">Passord</label>
+                            <input type="password" name="password" id="loginPassword" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn passord" />
+                            <input type="hidden" name="a" value="logIn" />
+                            <input type="submit" value="Logg inn" />
+                        </form>
+                    </div>
+                    <div id="login2" class="ui-body-d ui-content">
+                        <form id="newUserForm">
+                            <label for="newName">Navn</label>
+                            <input type="text" name="name" id="newName" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn ditt navn" />
+                            <label for="newUsername">Brukernavn</label>
+                            <input type="text" name="username" id="newUsername" data-clear-btn="true" maxlength="25" value="" placeholder="Skriv inn ønsket brukernavn" />
+                            <label for="newPassword">Passord</label>
+                            <input type="password" name="password" id="newPassword" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn ønsket passord" />
+                            <label for="newEmail">Email</label>
+                            <input type="text" name="email" id="newEmail" data-clear-btn="true" maxlength="75" value="" placeholder="Skriv inn din email" />
+                            <input type="hidden" name="a" value="newUser" />
+                            <input type="submit" value="Lag bruker" />
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div data-role="page" id="userPage">
+            <div data-role="header">
+                <h1>Helseflora Bruker (<span class="currentUserUsername"></span>)</h1>
+                <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <button id="logoutButton">Logg ut</button>
+            </div>
+        </div>
+        <div data-role="page" id="productCategoryPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h2>Kategorier</h2>
+                <ul data-role="listview" id="categories">
+                    <li data-role="list-divider">Kategorier</li>
+                    <li data-role="list-divider" id="categoryDivider">Andre</li>
+                    <li><a href="#">10 Mestselgende</a></li>
+                    <li><a href="#">Tilbud</a></li>
+                    <li><a href="#">Alle</a></li>
+                </ul>
+            </div>
+        </div>
+        <div data-role="page" id="productListPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#productCategoryPage" class="ui-btn-left" data-role="button" data-icon="carat-l" data-rel="back">Tilbake</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h2>Produkter i <span class="categoryName"></span></h2>
+                <ul data-role="listview" id="products">
+
+                </ul>
+            </div>
+        </div>
+        <div data-role="page" id="productPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#productListPage" class="ui-btn-left" data-role="button" data-icon="carat-l" data-rel="back">Tilbake</a>
+                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h2 id="productName">Testprodukt</h2>
+                <a href="#popupImage" data-rel="popup" data-transition="pop" data-position-to="window" class="floatLeft"><img src="icon.png" id="productImgSmall" /></a>
+                <div data-role="popup" data-overlay-theme="a" id="popupImage" class="photopopup" data-corners="false" data-tolerance="30,15">
+                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a><img src="icon.png" id="productImgLarge" />
+                </div>
+                <div class="floatLeft" style="margin-left: 10px;">
+                    <p style="margin: 0px;">Pris: <span id="productPrice">200</span>,- | <span id="productStock">1</span> på lager</p>
+                    <div data-role="controlgroup">
+                        <table style='width:200px'><tr>
+                            <td>
+                                <input type="hidden" id="productId" />
+                                <input type='number' name="amount" id="amount" min="1" max="20" value="1" />
+                            </td>
+                            <td style='font-size:80%; width:7em'>
+                                <a href="#" data-role="button" data-icon="shop" id="basketAddButton">Legg i kurv</a>
+                            </td>
+                        </tr></table>
+                    </div>
+                </div>
+                <p id="productDescription" style="clear: left;">Se små blomstene tørkes og brukes som te. Har en avslappende virkning.</p>
+                <table data-role="table" data-mode="reflow" id="productInfo" class="table-stroke">
+                    <thead><tr></tr></thead>
+                    <tbody><tr></tr></tbody>
+                </table>
+            </div>
+        </div>
     </body>
 </html>

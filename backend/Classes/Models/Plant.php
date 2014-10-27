@@ -13,6 +13,10 @@ class Plant extends DbModel{
      * Returns the price of this plant
      * @return float
      */
+    public function getName(){
+        return $this->info['name'];
+    }
+
     public function getPrice(){
         return (float)$this->getInfo()['price'];
     }

@@ -5,9 +5,15 @@
     <feature name="App">
         <param name="android-package" value="org.apache.cordova.App" />
     </feature>
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <feature name="Notification">
+        <param name="android-package" value="org.apache.cordova.dialogs.Notification" />
+    </feature>
     <name>Helseflora Shop</name>
     <description>
-        Hello World sample application that responds to the deviceready event.
+        Helseflora Shop
     </description>
     <author email="ronny@ronnrein.com" href="http://ronnrein.com">
         Ronny Reinhardtsen

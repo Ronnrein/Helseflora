@@ -12,11 +12,13 @@
         <link rel="stylesheet" type="text/css" href="css/jquery.mobile.icons.min.css" />
         <style type="text/css">
             .tinyTextInput{
-                width: 40px;
+                width:40px;
             }
-
             .floatLeft{
                 float:left;
+            }
+            .floatRight{
+                float:right;
             }
         </style>
         <title>Helseflora</title>
@@ -31,7 +33,7 @@
             <div data-role="header">
                 <h1>Helseflora</h1>
                 <a href="#loginPage" id="loginPageButton" class="ui-btn-left" data-role="button" data-transition="slidedown" data-icon="user">Logg inn</a>
-                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
             </div>
             <div data-role="content">
                 <h1>Velkommen til Helseflora shop!</h1>
@@ -42,7 +44,7 @@
             <div data-role="header">
                 <h1>Helseflora</h1>
                 <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-transition="slideup" data-rel="back">Hjem</a>
-                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
             </div>
             <div data-role="content">
                 <div data-role="tabs">
@@ -84,7 +86,7 @@
             <div data-role="header">
                 <h1>Helseflora Bruker (<span class="currentUserUsername"></span>)</h1>
                 <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
-                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-icon="shop">Tom</a>
             </div>
             <div data-role="content">
                 <button id="logoutButton">Logg ut</button>
@@ -94,7 +96,7 @@
             <div data-role="header">
                 <h1>Helseflora</h1>
                 <a href="#mainPage" class="ui-btn-left" data-role="button" data-icon="home" data-rel="back">Hjem</a>
-                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
             </div>
             <div data-role="content">
                 <h2>Kategorier</h2>
@@ -124,7 +126,7 @@
             <div data-role="header">
                 <h1>Helseflora</h1>
                 <a href="#productListPage" class="ui-btn-left" data-role="button" data-icon="carat-l" data-rel="back">Tilbake</a>
-                <a href="#cartPage" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
             </div>
             <div data-role="content">
                 <h2 id="productName">Testprodukt</h2>
@@ -136,14 +138,14 @@
                     <p style="margin: 0px;">Pris: <span id="productPrice">200</span>,- | <span id="productStock">1</span> på lager</p>
                     <div data-role="controlgroup">
                         <table style='width:200px'><tr>
-                            <td>
-                                <input type="hidden" id="productId" />
-                                <input type='number' name="amount" id="amount" min="1" max="20" value="1" />
-                            </td>
-                            <td style='font-size:80%; width:7em'>
-                                <a href="#" data-role="button" data-icon="shop" id="basketAddButton">Legg i kurv</a>
-                            </td>
-                        </tr></table>
+                        <td>
+                            <input type="hidden" id="productId" />
+                            <input type='number' name="amount" id="amount" min="1" max="20" value="1" />
+                        </td>
+                        <td style='font-size:80%; width:7em'>
+                            <a href="#" data-role="button" data-icon="shop" id="basketAddButton">Legg i kurv</a>
+                        </td>
+                    </tr></table>
                     </div>
                 </div>
                 <p id="productDescription" style="clear: left;">Se små blomstene tørkes og brukes som te. Har en avslappende virkning.</p>
@@ -151,6 +153,21 @@
                     <thead><tr></tr></thead>
                     <tbody><tr></tr></tbody>
                 </table>
+            </div>
+        </div>
+        <div data-role="page" id="cartPage">
+            <div data-role="header">
+                <h1>Helseflora</h1>
+                <a href="#productCategoryPage" class="ui-btn-left" data-role="button" data-icon="carat-l" data-rel="back">Tilbake</a>
+                <a href="#" class="ui-btn-right cartButton" data-role="button" data-transition="slideup" data-icon="shop">Tom</a>
+            </div>
+            <div data-role="content">
+                <h2>Produkter i handlekurv</h2>
+                <ul data-role="listview" id="cart">
+
+                </ul>
+                <br >
+                <a href="#" class="ui-btn" id="purchaseButton" data-role="button" data-icon="shop">Kjøp (<span id="price"></span>,-)</span></a>
             </div>
         </div>
     </body>

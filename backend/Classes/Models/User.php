@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Ronnrein
- * Date: 06.10.2014
- * Time: 17:58
- */
 
 namespace Classes\Models;
 
@@ -13,15 +7,24 @@ use Classes\Config;
 
 class User extends DbModel{
 
-    private static $newUserStmt = "INSERT INTO user (name, username, password, email) VALUES (:name, :username, :password, :email)";
+    private static $newUserStmt = "INSERT INTO user (name, username, password, email, accessid) VALUES (:name, :username, :password, :email, :accessid)";
     private static $checkUserStmt = "SELECT id FROM user WHERE username = :username AND password = :password";
 
+    /**
+     * @var User
+     */
     public static $current = null;
 
+    /**
+     * @return string
+     */
     public function getUsername(){
         return $this->info['username'];
     }
 
+    /**
+     * @return int
+     */
     public function getAccessId(){
         return (int)$this->info['accessid'];
     }
@@ -30,6 +33,9 @@ class User extends DbModel{
         $this->setField("username", $username);
     }
 
+    /**
+     * @return Session
+     */
     public function createToken(){
         return Session::create($this);
     }
@@ -58,7 +64,23 @@ class User extends DbModel{
     public static function create($name, $username, $password, $email){
         $db = \Classes\DB::getInstance();
         $stmt = $db->prepare(self::$newUserStmt);
-        $stmt->execute(array(":name" => $name, ":username" => $username, ":password" => self::hashPassword($password), ":email" => $email));
+        $stmt->execute(array(":name" => $name, ":username" => $username, ":password" => self::hashPassword($password), ":email" => $email, ":accessid" => Config::ACCESS_LEVEL_USER));
+    }
+
+    /**
+     * @param int $access
+     * @param User $user
+     * @return bool
+     */
+    public static function checkAccess($access, $user = null){
+        if(!isset($user)){
+            if(isset(self::$current)){
+                $user = self::$current;
+            } else{
+                return false;
+            }
+        }
+        return $user->getAccessId() >= $access;
     }
 
     /**

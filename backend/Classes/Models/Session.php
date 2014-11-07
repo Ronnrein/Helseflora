@@ -23,8 +23,12 @@ class Session extends DbModel{
         return $this->info['token'];
     }
 
+    public function getUserId(){
+        return (int)$this->info['user_id'];
+    }
+
     public function getUser(){
-        return new User($this->getId());
+        return new User($this->getUserId());
     }
 
     public function isValid(){

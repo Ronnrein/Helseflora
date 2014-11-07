@@ -4,7 +4,7 @@ namespace Api\CallablePostFunctions;
 
 use Classes\Models\Category;
 use Classes\Models\Plant;
-use Classes\Models\Sale;
+use Classes\Models\Order;
 use Classes\Models\User;
 use Classes\Models\Session;
 use Classes\Config;
@@ -12,7 +12,13 @@ use Classes\Config;
 // Here goes post functions that can get called by api
 
 function setField($data){
-    $class = "Classes\\Models\\".ucfirst(strtolower($data['table']));
+    $className = ucfirst(strtolower($data['table']));
+    if(!(
+        ($className == "User" && User::$current->getId() == (int)$data['id'])
+        || Config::ACCESS_LEVEL_ADMIN)){
+        return;
+    }
+    $class = "Classes\\Models\\".$className;
     $inst = new $class($data['id']);
     $func = "set".ucfirst(strtolower($data['field']));
     $inst->$func($data['value']);
@@ -46,4 +52,10 @@ function checkToken($data){
         return Config::STATUS_ERROR;
     }
 
+}
+
+function purchase($data){
+    if(User::checkAccess(Config::ACCESS_LEVEL_USER)){
+        Order::create(User::$current, json_decode($data['items']));
+    }
 }

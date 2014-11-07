@@ -59,12 +59,14 @@ if(isset($_GET['a'])){
 }
 
 if(isset($token)){
-    $token = Session::getByToken($token);
-    if($token->isValid()){
-        User::$current = $token->getUser();
-    } else{
-        $token->delete();
-    }
+    try{
+        $token = Session::getByToken($token);
+        if($token->isValid()){
+            User::$current = $token->getUser();
+        } else{
+            $token->delete();
+        }
+    } catch(\Exception $e){}
 }
 
 // If variable name is also function name, call it

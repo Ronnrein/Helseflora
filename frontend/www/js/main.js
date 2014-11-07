@@ -1,22 +1,18 @@
-// Settings
-var serverUrl = "http://192.168.10.20/Helseflora/backend/";
-var user = null;
-var storage;
-
 $(document).ready(function(){
 
-    // Do stuff right away
+    // Set up stuff
     $.support.cors = true;
     $.mobile.allowCrossDomainPages = true;
     app.initialize();
-    storage = window.localStorage;
-    checkLoggedIn();
+    
+    // Initialize listview and table
     $("#products").listview();
     $("#categories").listview();
+    $("#cart").listview();
     $("#productInfo").table();
 
-    // Fill categories right away in background
-    $.getJSON(serverUrl, {a: "getAll", what: "category"})
+    // Fill categories right away
+    $.getJSON(app.serverUrl, {a: "getAll", what: "category"})
         .done(function(data){
             $.each(data, function(i, item){
                 $("#categoryDivider").before("<li id='category-"+item.id+"'><a href='#'>"+item.name+"</a></li>");
@@ -24,40 +20,42 @@ $(document).ready(function(){
             $("#categories").listview("refresh");
         });
 
-    function checkLoggedIn(){
-        var item = storage.getItem("user");
-        if(item === null){
-            unsetUser();
-            return;
+    // Check user token right away
+    User.checkToken(setUserStatus);
+
+    // If cart has items, update cart button
+    if(Cart.size() > 0){
+        $(".cartButton").html(Cart.size());
+    }
+    
+    // ---------------------------------------- || ----------------------------------------
+    // Functions
+    // ---------------------------------------- || ----------------------------------------
+
+    function setUserStatus(loggedIn){
+        if(loggedIn){
+            var user = User.get();
+            $("#loginPageButton").attr("href", "#userPage").html(user.username);
+            $(".token").val(user.token);
+            $(".currentUserUsername").html(user.username);
+        } else{
+            User.unset();
         }
-        user = JSON.parse(item);
-        $.post(serverUrl, {a: "checkToken", sessionToken: user.token})
-            .done(function(data){
-                if(data === 1){
-                    $("#loginPageButton").attr("href", "#userPage").html(user.username);
-                    $(".token").val(user.token);
-                    $(".currentUserUsername").html(user.username);
-                } else{
-                    unsetUser()
-                }
-            });
     }
 
+    // Show loading spinner
     function showSpinner(){
         $.mobile.loading("show");
     }
 
+    // Hide loading spinner
     function hideSpinner(){
         $.mobile.loading("hide");
     }
 
-    function unsetUser(){
-        $("#loginPageButton").attr("href", "#loginPage").html("Logg inn");
-        localStorage.removeItem("user");
-        user = null;
-    }
-
+    // Fill product info table with data from array
     function fillProductInfo(info){
+        $("#productInfo > thead:last > tr:last, #productInfo > tbody:last > tr:last").html("");
         $.each(info, function(i, item){
             $("#productInfo > thead:last > tr:last").append("<td>"+item.field+"</td>");
             $("#productInfo > tbody:last > tr:last").append("<td>"+item.value+"</td>");
@@ -65,18 +63,40 @@ $(document).ready(function(){
         $("#productInfo").table("rebuild");
     }
 
+
+    // ---------------------------------------- || ----------------------------------------
+    // jQuery events
+    // ---------------------------------------- || ----------------------------------------
+
+    $("#basketAddButton").click(function(){
+        var id = parseInt($("#productId").val());
+        $("#amount").trigger("change");
+        var amount = parseInt($("#amount").val());
+        var stock = parseInt($("#productStock").html());
+        if(amount > stock){
+            app.showAlert("Ikke nok i lagerbeholdning!", "Feil");
+            return;
+        }
+        Cart.add(id, amount);
+        $(".cartButton").html(Cart.size());
+    });
+
+    // Log the user out
     $("#logoutButton").click(function(){
-        $.post(serverUrl, {a: "logOut", sessionToken: user.token});
-        unsetUser();
+        $.post(app.serverUrl, {a: User.logoutAction, sessionToken: User.getToken});
+        $("#loginPageButton").attr("href", "#loginPage").html("Logg inn");
+        User.unset();
         $.mobile.changePage($("#mainPage"), "slide");
     });
 
+    // Fill products list with products from chosen category
     $("#categories").on("click", "li[id^='category-']", function(){
         var id = $(this).attr("id").split("-")[1];
         $(".categoryName").html($("a", this).html());
         showSpinner();
-        $.getJSON(serverUrl, {a: "getAll", what: "plants", category: id, simple: "true"})
+        $.getJSON(app.serverUrl, {a: "getAll", what: "plants", category: id, simple: "true", token: User.getToken})
             .done(function(data){
+                $("#products").html("");
                 $.each(data, function(i, item){
                     $("#products").append("<li id='product-"+item.id+"'><a href='#'>"+item.name+"</a></li>");
                 });
@@ -86,11 +106,13 @@ $(document).ready(function(){
             });
     });
 
+    // Fill product information on the product page for chosen product
     $("#products").on("click", "li[id^='product-']", function(){
         var productId = $(this).attr("id").split("-")[1];
         showSpinner()
-        $.getJSON(serverUrl, {a: "get", what: "plant", id: productId})
+        $.getJSON(app.serverUrl, {a: "get", what: "plant", id: productId, token: User.getToken})
             .done(function(data){
+                $("#productId").val(data.id);
                 $("#productName").html(data.name);
                 $("#productImgSmall").attr("src", data.imageUrlS);
                 $("#productImgLarge").attr("src", data.imageUrlL);
@@ -122,6 +144,99 @@ $(document).ready(function(){
             });
     });
 
+    $(".cartButton").click(function(){
+        if(Cart.size() > 0){
+            showSpinner();
+            $.getJSON(app.serverUrl, {a: "getMultiple", what: "plants", ids: Cart.json(), token: User.getToken})
+                .done(function(data){
+                    $("#cart").html("");
+                    var price = 0;
+                    $.each(data, function(i, item){
+                        var id = parseInt(item.id);
+                        var amount = Cart.get()[id];
+                        price += parseInt(item.price) * amount;
+                        if(item.stock === 0){
+                            Cart.remove(id);
+                            return true;
+                        } else if(amount > item.stock){
+                            amount = item.stock;
+                        }
+                        $("#cart").append("<li id='product-"+item.id+"'>" +
+                            "<img src='"+item.imageUrlS+"' />" +
+                            "<div style='width: 50%;' class='floatLeft'>" +
+                                "<h3>"+item.name+" (<span class='itemPrice'>"+item.price+"</span>,-)</h3>" +
+                                "<p>"+item.description+"</p>" +
+                            "</div>" +
+                            "<table style='width:300px' class='floatRight'><tr>" +
+                                "<td>" +
+                                    "<input type='number' class='newAmount' min='1' max='"+item.stock+"' value='"+amount+"' />" +
+                                "</td>" +
+                                "<td style='font-size:80%; width:100px'>" +
+                                    "<a href='#' data-role='button' data-icon='recycle' class='amountUpdate'>Oppdater</a>" +
+                                "</td>" +
+                                "<td style='font-size:80%; width:100px'>" +
+                                    "<a href='#' data-role='button' data-icon='delete' class='amountDelete'>Slett</a>" +
+                                "</td>" +
+                            "</tr></table>" +
+                        "</li>");
+                    });
+                    $("#price").html(price);
+                    $("#cart").listview("refresh");
+                    hideSpinner();
+                    $.mobile.changePage($("#cartPage"), "slide");
+                })
+        }
+    });
+
+    $("#purchaseButton").click(function(){
+        showSpinner();
+        User.checkToken(function(loggedIn){
+            hideSpinner();
+            if(!loggedIn){
+                $.mobile.changePage($("#loginPage"), "slide");
+                return;
+            }
+            Cart.purchase();
+            $.mobile.changePage($("#mainPage"), "slide");
+            $(".cartButton").html("Tom");
+            app.showAlert("Kjøp komplett!", "Suksess");
+        });
+    });
+
+    $("#cart").on("click", ".amountUpdate", function(){
+        var li = $(this).closest("li");
+        var id = parseInt(li.attr("id").split("-")[1]);
+        var oldAmount = Cart.get()[id];
+        var newAmount = li.find(".newAmount").val();
+        var amountDiff = newAmount - oldAmount;
+        var currentPrice = parseInt($("#price").html());
+        var itemPrice = parseInt(li.find(".itemPrice").html());
+        var newPrice = currentPrice + (itemPrice * amountDiff);
+        $("#price").html(newPrice);
+        Cart.set(id, newAmount);
+    });
+
+    $("#cart").on("click", ".amountDelete", function(){
+        var li = $(this).closest("li");
+        var id = parseInt(li.attr("id").split("-")[1]);
+        var oldAmount = Cart.get()[id];
+        var newAmount = 0;
+        var amountDiff = newAmount - oldAmount;
+        var currentPrice = parseInt($("#price").html());
+        var itemPrice = parseInt(li.find(".itemPrice").html());
+        var newPrice = currentPrice + (itemPrice * amountDiff);
+        $("#price").html(newPrice);
+        Cart.delete(id);
+        li.remove();
+        $("#cart").listview("refresh");
+        if(Cart.size() === 0){
+            $.mobile.changePage($("#mainPage"), "slide");
+            $(".cartButton").html("Tom");
+        } else{
+            $(".cartButton").html(Cart.size());
+        }
+    });
+
     // Correct amount field if too much or too little
     $("#amount").change(function(){
         var val = $(this).val();
@@ -134,14 +249,14 @@ $(document).ready(function(){
         }
     });
 
+    // Check login info, log in if correct
     $("#loginForm").submit(function(e){
         showSpinner()
-        $.post(serverUrl, $(this).serialize())
+        $.post(app.serverUrl, $(this).serialize())
             .done(function(data){
                 if(data !== 0){
-                    user = {"username": data.username, "token": data.token, "access": data.access};
-                    storage.setItem("user", JSON.stringify(user));
-                    alert(user.username);
+                    User.set(data.username, data.token, data.access);
+                    user = User.get();
                     $(".token").val(user.token);
                     $(".currentUserUsername").html(user.username);
                     $("#loginPageButton").attr("href", "#userPage").html(user.username);

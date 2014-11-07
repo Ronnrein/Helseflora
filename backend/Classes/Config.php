@@ -25,6 +25,6 @@ class Config {
     const STATUS_ERROR = 0;
     const STATUS_SUCCESS = 1;
     const STATUS_NO_PERMISSION = 2;
-    const SECURITY_LEVEL_USER = 0;
-    const SECURITY_LEVEL_ADMIN = 1;
+    const ACCESS_LEVEL_USER = 0;
+    const ACCESS_LEVEL_ADMIN = 1;
 }

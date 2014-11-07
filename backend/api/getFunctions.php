@@ -21,12 +21,13 @@ function getAllPlants($data){
     if(isset($data['category'])){
         try{
             $cat = new Category($data['category']);
-            $array = $cat->getPlants();
+            $array = $cat->getPlants(User::checkAccess(Config::ACCESS_LEVEL_USER));
         } catch(\PDOException $e){
             return Config::STATUS_ERROR;
         }
     } else{
-        $array = Plant::getAll("ORDER BY id ASC");
+        $res = User::checkAccess(Config::ACCESS_LEVEL_USER) ? "" : "WHERE reserved=0 ";
+        $array = Plant::getAll($res."ORDER BY id ASC");
     }
     foreach($array as $plant){
         if(isset($data['simple']) && $data['simple'] == "true"){
@@ -48,6 +49,18 @@ function getPlant($data){
     $info['imageUrlS'] = $plant->getImageSmallURL();
     $info['imageUrlL'] = $plant->getImageLargeURL();
     return $info;
+}
+
+function getMultiplePlants($data){
+    $result = [];
+    foreach(json_decode($data['ids']) as $id => $amount){
+        $plant = new Plant((int)$id);
+        $info = $plant->getInfo();
+        $info['imageUrlS'] = $plant->getImageSmallURL();
+        $info['imageUrlL'] = $plant->getImageLargeURL();
+        $result[] = $info;
+    }
+    return $result;
 }
 
 /**
@@ -84,6 +97,25 @@ function get($data){
     } else if(class_exists($classNameFull)){
         $obj = new $classNameFull((int)$data['id']);
         return $obj->getInfo();
+    }
+    return Config::STATUS_ERROR;
+}
+
+function getMultiple($data){
+    $className = ucfirst(strtolower($data['what']));
+    $funcName = rtrim("Api\\CallableGetFunctions\\getMultiple".$className, "s")."s";
+    $classNameFull = rtrim("Classes\\Models\\".$className, "s");
+
+    // If a function already exists for requested table/class, call it, else if requested class exists, return its data
+    if(function_exists($funcName)){
+        return $funcName($data);
+    } else if(class_exists($classNameFull)){
+        $result = [];
+        foreach(json_decode($data['ids']) as $id){
+            $obj = new $classNameFull((int)$id);
+            $result[] = $obj->getInfo();
+        }
+        return $result;
     }
     return Config::STATUS_ERROR;
 }

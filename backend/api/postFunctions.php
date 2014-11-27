@@ -16,7 +16,7 @@ function setField($data){
     if(!(
         ($className == "User" && User::$current->getId() == (int)$data['id'])
         || Config::ACCESS_LEVEL_ADMIN)){
-        return;
+        return Config::STATUS_ERROR;
     }
     $class = "Classes\\Models\\".$className;
     $inst = new $class($data['id']);
@@ -29,7 +29,7 @@ function logIn($data){
     $user = User::checkLogin($data['username'], $data['password']);
     if($user) {
         $session = $user->createToken();
-        return array("username" => $user->getUsername(), "token" => $session->getToken(), "access" => $user->getAccessId());
+        return array("id" => $user->getId(), "username" => $user->getUsername(), "name" => $user->getName(), "email" => $user->getEmail(), "token" => $session->getToken(), "access" => $user->getAccessId());
     } else{
         return Config::STATUS_ERROR;
     }
@@ -37,6 +37,19 @@ function logIn($data){
 
 function logOut($data){
     Session::getByToken($data['sessionToken'])->delete();
+}
+
+function editUser($data){
+    $user = User::$current;
+    if(User::checkAccess(Config::ACCESS_LEVEL_ADMIN) && isset($data['userid'])){
+        $user = new User((int)$data['userid']);
+    }
+    if(isset($data['password']) && $data['password'] != ""){
+        $user->setPassword($data['password']);
+    }
+    $user->setName($data['name']);
+    $user->setUsername($data['username']);
+    $user->setEmail($data['email']);
 }
 
 function checkToken($data){
@@ -58,4 +71,8 @@ function purchase($data){
     if(User::checkAccess(Config::ACCESS_LEVEL_USER)){
         Order::create(User::$current, json_decode($data['items']));
     }
+}
+
+function newUser($data){
+    User::create($data['name'], $data['username'], $data['password'], $data['email']);
 }

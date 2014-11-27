@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Ronnrein
- * Date: 03.10.2014
- * Time: 16:41
- */
 
 namespace Classes\Models\AbstractModels;
-
 
 use Classes\DB;
 use PDO;
@@ -77,6 +70,7 @@ abstract class DbModel {
      * Delete this row of the class
      */
     public function delete(){
+        echo "DELETING TOKEN";
         $exp = explode('\\', get_called_class());
         $stmt = $this->DB->prepare("DELETE FROM ".strtolower(end($exp))." WHERE id= :id");
         $stmt->execute(array(":id" => $this->getId()));
@@ -89,7 +83,7 @@ abstract class DbModel {
      */
     protected function setField($field, $value) {
         $exp = explode('\\', get_called_class());
-        $stmt = $this->DB->prepare("UPDATE ".strtolower(end($exp))." SET {$field} = :value WHERE id = :id");
+        $stmt = $this->DB->prepare("UPDATE `".strtolower(end($exp))."` SET `{$field}` = :value WHERE id = :id");
         $stmt->execute(array(":value" => $value, ":id" => $this->getId()));
         foreach(static::getInstances() as $instance){
             if($instance->getId() === $this->getId()){
@@ -100,7 +94,7 @@ abstract class DbModel {
 
     /**
      * Get all instances of current class
-     * @return array
+     * @return $this[]
      */
     protected static function getInstances(){
         $result = array();
@@ -112,14 +106,15 @@ abstract class DbModel {
         return $result;
     }
 
-    /**
+    /**$appendix
      * Get all the rows of this model as objects
      * @return $this[]
      */
     public static function getAll($appendix = ""){
+        $appendix = $appendix != "" ? " ".$appendix : $appendix;
         $db = DB::getInstance();
         $result = array();
-        $stmt = $db->prepare("SELECT * FROM ".static::getView()." ".$appendix);
+        $stmt = $db->prepare("SELECT * FROM `".static::getView()."`".$appendix);
         $stmt->execute();
         foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row){
             $result[] = new static($row);
@@ -130,7 +125,7 @@ abstract class DbModel {
 
     /**
      * Gets name of table/view to get data from
-     * @return bool
+     * @return string
      */
     public static function getView(){
         $exp = explode('\\', get_called_class());

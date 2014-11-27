@@ -79,12 +79,20 @@ if(function_exists($action)){
 
 // Output functions
 
+/**
+ * Output using desired output method
+ * @param $data
+ */
 function output($data){
     $outputFunc = "Api\\output".ucfirst(explode("/", CONTENT)[1]);
     header("Content-Type: ".CONTENT);
     $outputFunc($data);
 }
 
+/**
+ * Outputs as plaintext
+ * @param $data
+ */
 function outputPlain($data){
     print_r($data);
 }

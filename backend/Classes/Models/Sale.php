@@ -4,12 +4,15 @@ namespace Classes\Models;
 
 use Classes\Models\AbstractModels\DbModel;
 
+/**
+ * Represents a sale in the database
+ * Class Sale
+ * @package Classes\Models
+ */
 class Sale extends DbModel{
 
-    // GETTERS
-
     /**
-     * Gets the percentage of this sale
+     * Returns the percentage of this sale
      * @return float
      */
     public function getPercentage(){
@@ -17,7 +20,7 @@ class Sale extends DbModel{
     }
 
     /**
-     * Gets the new price of the plant
+     * Returns the new price of the plant after sale percentage
      * @return float
      */
     public function getNewPrice(){

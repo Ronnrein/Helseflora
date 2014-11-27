@@ -1,13 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Ronnrein
- * Date: 03.10.2014
- * Time: 16:37
- */
 
 namespace Classes;
 
+/**
+ * Holds configuration constants for easy access and modification
+ * Class Config
+ * @package Classes
+ */
 class Config {
 
     // Constants
@@ -27,4 +26,12 @@ class Config {
     const STATUS_NO_PERMISSION = 2;
     const ACCESS_LEVEL_USER = 0;
     const ACCESS_LEVEL_ADMIN = 1;
+
+    /**
+     * Returns the full requested url
+     * @return string
+     */
+    public static function getUrl(){
+        return "http://".$_SERVER['HTTP_HOST'].strtok($_SERVER["REQUEST_URI"],'?');
+    }
 }

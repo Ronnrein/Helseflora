@@ -79,7 +79,6 @@
                         </form>
                     </div>
                 </div>
-
             </div>
         </div>
         <div data-role="page" id="userPage">
@@ -90,6 +89,48 @@
             </div>
             <div data-role="content">
                 <button id="logoutButton">Logg ut</button>
+                <div data-role="tabs">
+                    <div data-role="navbar">
+                        <ul id="adminNav">
+                            <li><a href="#admin1" data-ajax="false">Bruker</a></li>
+                            <li><a href="#admin2" data-ajax="false">Ordre</a></li>
+                            <li><a href="#admin3" id="adminNavButton" data-ajax="false">Admin</a></li>
+                        </ul>
+                    </div>
+                    <div id="admin1" class="ui-body-d ui-content">
+                        <form id="editUserForm">
+                            <label for="editName">Navn</label>
+                            <input type="text" name="name" id="editName" data-clear-btn="true" maxlength="75" value="" placeholder="Skriv inn navn" />
+                            <label for="editUsername">Brukernavn</label>
+                            <input type="text" name="username" id="editUsername" data-clear-btn="true" maxlength="25" value="" placeholder="Skriv inn brukernavn" />
+                            <label for="editEmail">Email</label>
+                            <input type="text" name="email" id="editEmail" data-clear-btn="true" maxlength="75" value="" placeholder="Skriv inn email" />
+                            <label for="editPassword">Nytt Passord (La stå tom for ikke redigere)</label>
+                            <input type="password" name="password" id="editPassword" data-clear-btn="true" maxlength="50" value="" placeholder="Skriv inn passord" />
+                            <input type="hidden" name="a" value="editUser" />
+                            <input type="hidden" class="token" name="token" value="" />
+                            <input type="submit" value="Oppdater" />
+                        </form>
+                    </div>
+                    <div id="admin2" class="ui-body-d ui-content">
+                        <ul data-role="listview" id="userOrderList">
+
+                        </ul>
+                    </div>
+                    <div id="admin3" class="ui-body-d ui-content">
+                        <form id="newPlantForm">
+                            <label for="newPlantName">Navn</label>
+                            <input type="text" name="name" id="newPlantName" data-clear-btn="true" maxlength="75" value="" placeholder="Skriv inn navn" />
+                            <label for="categoryList">Kategori</label>
+                            <select name="category" id="categoryList"></select>
+                            <label for="newPlantDescription">Beskrivelse</label>
+                            <textarea name="description" id="newPlantDescription"></textarea>
+                            <input type="hidden" name="a" value="newPlant" />
+                            <input type="hidden" class="token" name="token" value="" />
+                            <input type="submit" value="Legg til" />
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         <div data-role="page" id="productCategoryPage">

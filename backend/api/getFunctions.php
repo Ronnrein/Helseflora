@@ -5,8 +5,8 @@ namespace Api\CallableGetFunctions;
 use Classes\Models\Category;
 use Classes\Models\Plant;
 use Classes\Models\Sale;
-use Classes\Models\Session;
 use Classes\Models\User;
+use Classes\Models\Order;
 use Classes\Config;
 
 // Here goes get functions that can get called by api
@@ -61,6 +61,33 @@ function getMultiplePlants($data){
         $result[] = $info;
     }
     return $result;
+}
+
+/**
+ * Override to remove password hash
+ * @param $data
+ * @return array
+ */
+function getAllUsers($data){
+    $result = [];
+    foreach(User::getAll() as $user){
+        $info = $user->getInfo();
+        unset($info['password']);
+        $result[] = $info;
+    }
+    return $result;
+}
+
+/**
+ * Override to remove password hash
+ * @param $data
+ * @return array
+ */
+function getUser($data){
+    $user = new User($data['id']);
+    $info = $user->getInfo();
+    unset($info['password']);
+    return $info;
 }
 
 /**
@@ -152,8 +179,22 @@ function getAllSalesplants($data){
     return $result;
 }
 
-function test($data){
-    $session = Session::getByToken($data['token']);
-    $user = $session->getUser();
-    return $session->isValid();
+function getAllOrders($data){
+    if(!User::checkAccess(Config::ACCESS_LEVEL_USER)){
+        return Config::STATUS_NO_PERMISSION;
+    }
+    $result = [];
+    foreach(Order::getAll("WHERE user_id = ".User::$current->getId()) as $order){
+        $info = $order->getInfo();
+        $subInfo = [];
+        foreach($order->getItems() as $item){
+            $details = $item->getInfo();
+            $plant = $item->getPlant();
+            $details['name'] = $plant->getName();
+            $subInfo[] = $details;
+        }
+        $info['items'] = $subInfo;
+        $result[] = $info;
+    }
+    return $result;
 }

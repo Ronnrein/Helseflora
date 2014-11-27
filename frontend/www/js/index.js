@@ -55,7 +55,7 @@ var app = {
         }
     },
 
-    serverUrl: "http://192.168.10.20/Helseflora/backend/"
+    serverUrl: "http://ronnrein.no/helseflora/"
 };
 
 // ---------------------------------------- || ----------------------------------------
@@ -92,8 +92,9 @@ var User = {
                 return result;
             });
     },
-    set: function(username, token, access){
-        window.localStorage.setItem(this.storageKey, JSON.stringify({"username": username, "token": token, "access": access}));
+    set: function(id, username, name, email, token, access){
+        var data = {"id": id, "username": username, "token": token, "access": access, "name": name, "email": email};
+        window.localStorage.setItem(this.storageKey, JSON.stringify(data));
     },
     unset: function(){
         window.localStorage.removeItem(this.storageKey);

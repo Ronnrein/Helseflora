@@ -154,6 +154,7 @@ C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\js\index.js \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\js\jquery.js \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\js\jquery.mobile-1.4.4.min.map \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\js\jquery.mobile.js \
+C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\js\main.js \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\plugins\org.apache.cordova.device \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\plugins\org.apache.cordova.dialogs \
 C:\wamp\www\Helseflora\frontend\platforms\android\assets\www\plugins\org.apache.cordova.device\www \
